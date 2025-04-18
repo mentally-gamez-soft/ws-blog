@@ -1,0 +1,16 @@
+# Use postgres/example user/password credentials
+version: '3.1'
+
+services:
+  postgres-db:
+    container_name: mycurrency_postgres_container
+    # uts: host
+    image: postgres:bookworm
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_123
+      POSTGRES_DB: miniblog
+    ports:
+      - 5432:5432
+

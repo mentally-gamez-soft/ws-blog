@@ -15,6 +15,9 @@
     
     $ flask --app core.application run --port 3456 --host 0.0.0.0
 
+## Postgres database connection string
+    postgresql://<nombre_usuario>:<password>@<host>:<puerto>/<nombre_basededatos>
+
 
 
 

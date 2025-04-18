@@ -3,5 +3,6 @@
 {% block title %} {{ slug_ttle }} {% endblock %}
 
 {% block content %}
-    This is the post {{ slug_title }}
+    <h1>{{ post.title }}</h1>
+    {{ post.content }}
 {% endblock %}

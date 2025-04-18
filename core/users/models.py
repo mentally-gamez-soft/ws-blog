@@ -3,25 +3,19 @@
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from application import db
 
-class User(UserMixin):
+
+class User(db.Model, UserMixin):
     """Declare the user model class."""
 
-    def __init__(self, id, name, email, password, is_admin=False):
-        """Creqte qn instance for a user.
+    __tablename__ = "blog_user"
 
-        Args:
-            id (int): The ID for a user.
-            name (str): the name of a suer.
-            email (str): the email of a user.
-            password (str): the password of the user.
-            is_admin (bool, optional): Indicate if a user has admin privileges. Defaults to False.
-        """
-        self.id = id
-        self.name = name
-        self.email = email
-        self.password = generate_password_hash(password)
-        self.is_admin = is_admin
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(256), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         """Set the assword for a user.
@@ -31,7 +25,7 @@ class User(UserMixin):
         """
         self.password = generate_password_hash(password)
 
-    def check_password(self, password) -> bool:
+    def check_password(self, password):
         """Control that a given password is correct.
 
         Args:
@@ -42,25 +36,40 @@ class User(UserMixin):
         """
         return check_password_hash(self.password, password)
 
-    def __repr__(self) -> str:
+    def save(self):
+        """Save an instance of a user in the database."""
+        if not self.id:
+            db.session.add(self)
+        db.session.commit()
+
+    def __repr__(self):
         """Set the representation of an instance of a user.
 
         Returns:
             str: An instance of a user.
         """
-        return "<User {}>".format(self.email)
+        return f"<User {self.email}>"
 
+    @staticmethod
+    def get_by_id(id) -> "User":
+        """Retrieve a user according to its ID.
 
-users = []
+        Args:
+            id (int): the ID of a user.
 
+        Returns:
+            User: An instance of a user.
+        """
+        return User.query.get(id)
 
-def get_user(email) -> "User" | None:
-    """Retrieve an instance of a user according to its email.
+    @staticmethod
+    def get_by_email(email) -> "User":
+        """Retrieve a user according to its email.
 
-    Returns:
-        User: an instance of a user. None if the email refers to no user.
-    """
-    for user in users:
-        if user.email == email:
-            return user
-    return None
+        Args:
+            email (str): the email of a user.
+
+        Returns:
+            User: An instance of a user.
+        """
+        return User.query.filter_by(email=email).first()
