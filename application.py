@@ -1,14 +1,43 @@
 """Create the flask application instance and config route."""
 
+from urllib.parse import urlparse
+
 from flask import Flask, redirect, render_template, request, url_for
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
 
 from core.blog_post.forms import BlogPostForm
-from core.users.forms import SignupForm
+from core.users.forms import LoginForm, SignupForm
+from core.users.models import User, get_user, users
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "Th1S-Iz.My-5uP3r_seCRE7#k"  # nosec
 
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+
 posts = []
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Load the user session.
+
+    Args:
+        user_id (int): The id of the user.
+
+    Returns:
+        user: an instance for the logged in user.
+    """
+    for user in users:
+        if user.id == int(user_id):
+            return user
+    return None
 
 
 @app.route("/")
@@ -36,6 +65,7 @@ def show_post(slug):
 
 @app.route("/admin/post/", methods=["GET", "POST"], defaults={"post_id": None})
 @app.route("/admin/post/<int:post_id>/", methods=["GET", "POST"])
+@login_required
 def post_form(post_id):
     """Define the form to consult a post and to modify it.
 
@@ -72,9 +102,43 @@ def show_signup_form():
         email = form.email.data
         password = form.password.data
 
+        # Creamos el usuario y lo guardamos
+        user = User(len(users) + 1, name, email, password)
+        users.append(user)
+        # Dejamos al usuario logueado
+        login_user(user, remember=True)
+
         next = request.args.get("next", None)
         if next:
             return redirect(next)
         return redirect(url_for("index"))
 
     return render_template("users/signup_form.html", form=form)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Define the form for a user to login."""
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = get_user(form.email.data)
+        if user is not None and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            next_page = request.args.get("next")
+            if not next_page or urlparse(next_page).netloc != "":
+                next_page = url_for("index")
+            return redirect(next_page)
+    return render_template("users/login_form.html", form=form)
+
+
+@app.route("/logout")
+def logout():
+    """Log a user out.
+
+    Returns:
+        Response: the response to the index page.
+    """
+    logout_user()
+    return redirect(url_for("index"))
