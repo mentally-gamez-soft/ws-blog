@@ -15,11 +15,5 @@ class BlogPostForm(FlaskForm):
             Length(max=255),
         ],
     )
-    title_slug = StringField(
-        "Title slug",
-        validators=[
-            Length(max=255),
-        ],
-    )
     content = TextAreaField("Content")
     submit = SubmitField("Submit")

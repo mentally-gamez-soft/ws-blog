@@ -6,7 +6,7 @@ from flask import url_for
 from slugify import slugify
 from sqlalchemy.exc import IntegrityError
 
-from application import db
+from core import db
 
 
 class Post(db.Model):
