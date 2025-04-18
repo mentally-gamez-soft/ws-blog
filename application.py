@@ -2,7 +2,7 @@
 
 from urllib.parse import urlparse
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, url_for
 from flask_login import (
     LoginManager,
     current_user,
@@ -10,18 +10,25 @@ from flask_login import (
     login_user,
     logout_user,
 )
+from flask_sqlalchemy import SQLAlchemy
 
 from core.blog_post.forms import BlogPostForm
 from core.users.forms import LoginForm, SignupForm
-from core.users.models import User, get_user, users
+from core.users.models import User, users
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "Th1S-Iz.My-5uP3r_seCRE7#k"  # nosec
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    "postgresql://postgres:test_123@localhost:5432/miniblog"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
+db = SQLAlchemy(app)
 
-posts = []
+from core.blog_post.models import Post
+from core.users.models import User
 
 
 @login_manager.user_loader
@@ -34,10 +41,7 @@ def load_user(user_id):
     Returns:
         user: an instance for the logged in user.
     """
-    for user in users:
-        if user.id == int(user_id):
-            return user
-    return None
+    return User.get_by_id(int(user_id))
 
 
 @app.route("/")
@@ -45,8 +49,9 @@ def index():
     """Declare the index route.
 
     Returns:
-        str: the number of existing posts.
+        str: All the existing posts.
     """
+    posts = Post.get_all()
     return render_template("index.html", posts=posts)
 
 
@@ -60,7 +65,10 @@ def show_post(slug):
     Returns:
         str: The post title.
     """
-    return render_template("post_view.html", slug_title=slug)
+    post = Post.get_by_slug(slug)
+    if post is None:
+        abort(404)
+    return render_template("post_view.html", post=post)
 
 
 @app.route("/admin/post/", methods=["GET", "POST"], defaults={"post_id": None})
@@ -78,11 +86,11 @@ def post_form(post_id):
     form = BlogPostForm()
     if form.validate_on_submit():
         title = form.title.data
-        title_slug = form.title_slug.data
         content = form.content.data
 
-        post = {"title": title, "title_slug": title_slug, "content": content}
-        posts.append(post)
+        post = Post(user_id=current_user.id, title=title, content=content)
+        post.save()
+
         return redirect(url_for("index"))
     return render_template("admin/post_form.html", form=form)
 
@@ -96,24 +104,37 @@ def post_form(post_id):
 )
 def show_signup_form():
     """Define the form for a user to signup."""
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+
     form = SignupForm()
+    error = None
+
     if form.validate_on_submit():
         name = form.name.data
         email = form.email.data
         password = form.password.data
 
-        # Creamos el usuario y lo guardamos
-        user = User(len(users) + 1, name, email, password)
-        users.append(user)
-        # Dejamos al usuario logueado
-        login_user(user, remember=True)
+        # Comprobamos que no hay ya un usuario con ese email
+        user = User.get_by_email(email)
+        if user is not None:
+            error = (
+                f"El email {email} ya está siendo utilizado por otro usuario"
+            )
+        else:
+            # Creamos el usuario y lo guardamos
+            user = User(name=name, email=email)
+            user.set_password(password)
+            user.save()
+            # Dejamos al usuario logueado
+            login_user(user, remember=True)
 
-        next = request.args.get("next", None)
-        if next:
-            return redirect(next)
-        return redirect(url_for("index"))
+            next_page = request.args.get("next", None)
+            if not next_page or urlparse(next_page).netloc != "":
+                next_page = url_for("index")
+            return redirect(next_page)
 
-    return render_template("users/signup_form.html", form=form)
+    return render_template("users/signup_form.html", form=form, error=error)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -123,7 +144,7 @@ def login():
         return redirect(url_for("index"))
     form = LoginForm()
     if form.validate_on_submit():
-        user = get_user(form.email.data)
+        user = User.get_by_email(form.email.data)
         if user is not None and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             next_page = request.args.get("next")
