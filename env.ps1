@@ -1,3 +1,3 @@
-$env:FLASK_APP = 'core/app.py'
-$env:FLASK_ENV = 'development'
-$env:FLASK_DEBUG = '1'
+$env:FLASK_APP = 'application.py'
+$env:FLASK_ENV = 'local'
+$env:FLASK_DEBUG = '0'

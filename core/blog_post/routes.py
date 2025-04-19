@@ -60,3 +60,11 @@ def post_form(post_id):
 
         return redirect(url_for("blog_post.index"))
     return render_template("admin/post_form.html", form=form)
+
+
+@blog_post_bp.route("/error")
+def show_error():
+    """Create a route to demonstrate the display of an error."""
+    res = 1 / 0
+    posts = Post.get_all()
+    return render_template("blog_post/index.html", posts=posts)
