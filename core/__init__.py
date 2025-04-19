@@ -27,18 +27,19 @@ def register_blueprints(app):
     app.register_blueprint(blog_post_bp)
 
 
-def create_app():
+def create_app(settings_module="config.DevelopmentConfig"):
     """Create the application loading the config.
 
     Returns:
         app: the flask application.
     """
-    app = Flask(__name__)
-    app.config["SECRET_KEY"] = "Th1S-Iz.My-5uP3r_seCRE7#k"  # nosec
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "postgresql://postgres:test_123@localhost:5432/miniblog"
-    )
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_object(settings_module)
+    # Load the configuration from the instance folder
+    if app.config.get("TESTING", False):
+        app.config.from_pyfile("config-testing.py", silent=True)
+    else:
+        app.config.from_pyfile("config.py", silent=True)
 
     login_manager.init_app(app)
     login_manager.login_view = "users.login"
