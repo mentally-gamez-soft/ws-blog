@@ -1,6 +1,6 @@
 """Declare the module of the application."""
 
-from flask import Flask
+from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
@@ -45,4 +45,20 @@ def create_app():
     db.init_app(app)
 
     register_blueprints(app)
+
+    # Custom error handlers
+    register_error_handlers(app)
+
     return app
+
+
+def register_error_handlers(app):
+    """Add custom error handlers to the app."""
+
+    @app.errorhandler(500)
+    def base_error_handler(e):
+        return render_template("500.html"), 500
+
+    @app.errorhandler(404)
+    def error_404_handler(e):
+        return render_template("404.html"), 404
