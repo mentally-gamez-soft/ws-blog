@@ -15,3 +15,13 @@ APP_ENV_DEVELOPMENT = "development"
 APP_ENV_STAGING = "staging"
 APP_ENV_PRODUCTION = "production"
 APP_ENV = ""
+
+# Configuración del email
+MAIL_SERVER = "tu servidor smtp"
+MAIL_PORT = 587
+MAIL_USERNAME = "tu correo"  # nosec
+MAIL_PASSWORD = "tu contrasena"  # nosec
+DONT_REPLY_FROM_EMAIL = "direccion from"  # nosec
+ADMINS = ("admin.app@myflaskapp.com",)
+MAIL_USE_TLS = True
+MAIL_DEBUG = False
