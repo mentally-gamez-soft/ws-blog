@@ -13,7 +13,7 @@ from .forms import LoginForm, SignupForm
 from .models import User
 
 
-@login_manager.route("/admin/")
+@users_bp.route("/admin/")
 @login_required
 @admin_required
 def index():
