@@ -3,13 +3,22 @@
 from urllib.parse import urlparse
 
 from flask import redirect, render_template, request, url_for
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 
 from core import login_manager
+from core.users.decorators import admin_required
 
 from . import users_bp
 from .forms import LoginForm, SignupForm
 from .models import User
+
+
+@login_manager.route("/admin/")
+@login_required
+@admin_required
+def index():
+    """Declare the the index page for the admin view."""
+    return render_template("admin/index.html")
 
 
 @login_manager.user_loader
@@ -93,3 +102,12 @@ def logout():
     """
     logout_user()
     return redirect(url_for("index"))
+
+
+@users_bp.route("/admin/users/")
+@login_required
+@admin_required
+def list_users():
+    """Describe the view to list all the users."""
+    users = User.get_all()
+    return render_template("admin/users.html", users=users)

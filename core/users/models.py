@@ -73,3 +73,13 @@ class User(db.Model, UserMixin):
             User: An instance of a user.
         """
         return User.query.filter_by(email=email).first()
+
+    def delete(self):
+        """Delete an instance of a user."""
+        db.session.delete(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all():
+        """Retrieve the list of all the users."""
+        return User.query.all()
