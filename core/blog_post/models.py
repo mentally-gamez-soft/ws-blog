@@ -39,13 +39,13 @@ class Post(db.Model):
                 count += 1
                 self.title_slug = f"{slugify(self.title)}-{count}"
 
-    def public_url(self) -> str:
-        """Return the public url for a blog post.
+    # def public_url(self) -> str:
+    #     """Return the public url for a blog post.
 
-        Returns:
-            str: the url of the blog post.
-        """
-        return url_for("show_post", slug=self.title_slug)
+    #     Returns:
+    #         str: the url of the blog post.
+    #     """
+    #     return url_for("show_post", slug=self.title_slug)
 
     @staticmethod
     def get_by_slug(slug) -> "Post":
@@ -75,3 +75,20 @@ class Post(db.Model):
             str: An instance of a post.
         """
         return f"<Post {self.title}>"
+
+    def delete(self):
+        """Delete a post blog instance from DB."""
+        db.session.delete(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_by_id(id):
+        """Retrieve a blog post according to its ID.
+
+        Args:
+            id (int): the ID of the blog post.
+
+        Returns:
+            Post: a post instance or None if not found.
+        """
+        return Post.query.get(id)
