@@ -5,7 +5,8 @@ import logging
 from flask import abort, current_app, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
-from core.blog_post.models import Post
+from core.blog_post.models import Comment, Post
+from core.blog_post.templates.forms import CommentForm
 from core.users.decorators import admin_required
 from core.users.models import User
 
@@ -38,10 +39,24 @@ def show_post(slug):
     Returns:
         str: The post title.
     """
+    logger.info("Mostrando un post")
+    logger.debug(f"Slug: {slug}")
     post = Post.get_by_slug(slug)
-    if post is None:
+    if not post:
+        logger.info(f"El post {slug} no existe")
         abort(404)
-    return render_template("post_view.html", post=post)
+    form = CommentForm()
+    if current_user.is_authenticated and form.validate_on_submit():
+        content = form.content.data
+        comment = Comment(
+            content=content,
+            user_id=current_user.id,
+            user_name=current_user.name,
+            post_id=post.id,
+        )
+        comment.save()
+        return redirect(url_for("blog_post.show_post", slug=post.title_slug))
+    return render_template("post_view.html", post=post, form=form)
 
 
 @blog_post_bp.route("/admin/post/", methods=["GET", "POST"])

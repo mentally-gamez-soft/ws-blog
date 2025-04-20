@@ -1,13 +1,16 @@
 """Declare the module of the application."""
 
+import logging
 from logging.handlers import SMTPHandler
 
-from flask import Flask, logging, render_template
+from flask import Flask, render_template
 from flask_login import LoginManager
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 login_manager = LoginManager()
 db = SQLAlchemy()
+migrate = Migrate()  # Se crea un objeto de tipo Migrate
 
 
 def verbose_formatter():
@@ -51,7 +54,7 @@ def configure_logging(app):
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(verbose_formatter())
-
+    print(app.config)
     if (
         (app.config["APP_ENV"] == app.config["APP_ENV_LOCAL"])
         or (app.config["APP_ENV"] == app.config["APP_ENV_TESTING"])
@@ -121,6 +124,7 @@ def create_app(settings_module="config.DevelopmentConfig"):
     login_manager.init_app(app)
     login_manager.login_view = "users.login"
     db.init_app(app)
+    migrate.init_app(app, db)  # Se inicializa el objeto migrate
 
     register_blueprints(app)
 

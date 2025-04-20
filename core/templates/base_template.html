@@ -9,19 +9,19 @@
 <body>
     <div>
         <ul class="user-info">
-            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('blog_post.index') }}">Home</a></li>
             {% if current_user.is_anonymous %}
-                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('users.login') }}">Login</a></li>
                 <li> | </li>
-                <li><a href="{{ url_for('show_signup_form') }}">Registrar</a></li>
+                <li><a href="{{ url_for('users.show_signup_form') }}">Registrar</a></li>
             {% else %}
                 <li>{{ current_user.name }}</li>
                 {% if current_user.is_admin %}
                     <li> | </li>
-                    <li><a href="{{ url_for('admin.index') }}">Admin</a></li>
+                    <li><a href="{{ url_for('blog_post.admin.index') }}">Admin</a></li>
                 {% endif %}
                 <li> | </li>
-                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                <li><a href="{{ url_for('users.logout') }}">Logout</a></li>
             {% endif %}
         </ul>
     </div>
