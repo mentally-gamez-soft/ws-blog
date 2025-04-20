@@ -1,11 +1,86 @@
 """Declare the module of the application."""
 
-from flask import Flask, render_template
+from logging.handlers import SMTPHandler
+
+from flask import Flask, logging, render_template
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
 login_manager = LoginManager()
 db = SQLAlchemy()
+
+
+def verbose_formatter():
+    """Define the logger formatter for the console."""
+    return logging.Formatter(
+        "[%(asctime)s.%(msecs)d]\t %(levelname)s \t[%(name)s.%(funcName)s:%(lineno)d]\t %(message)s",
+        datefmt="%d/%m/%Y %H:%M:%S",
+    )
+
+
+def mail_handler_formatter():
+    """Define the logger formatter for the emails."""
+    return logging.Formatter(
+        """
+            Message type:       %(levelname)s
+            Location:           %(pathname)s:%(lineno)d
+            Module:             %(module)s
+            Function:           %(funcName)s
+            Time:               %(asctime)s.%(msecs)d
+
+            Message:
+
+            %(message)s
+        """,
+        datefmt="%d/%m/%Y %H:%M:%S",
+    )
+
+
+def configure_logging(app):
+    """Configure the loggers for the application."""
+    # Eliminamos los posibles manejadores, si existen, del logger por defecto
+    del app.logger.handlers[:]
+
+    # Añadimos el logger por defecto a la lista de loggers
+    loggers = [
+        app.logger,
+    ]
+    handlers = []
+
+    # Creamos un manejador para escribir los mensajes por consola
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(verbose_formatter())
+
+    if (
+        (app.config["APP_ENV"] == app.config["APP_ENV_LOCAL"])
+        or (app.config["APP_ENV"] == app.config["APP_ENV_TESTING"])
+        or (app.config["APP_ENV"] == app.config["APP_ENV_DEVELOPMENT"])
+    ):
+        console_handler.setLevel(logging.DEBUG)
+        handlers.append(console_handler)
+    elif app.config["APP_ENV"] == app.config["APP_ENV_PRODUCTION"]:
+        console_handler.setLevel(logging.INFO)
+        handlers.append(console_handler)
+
+        mail_handler = SMTPHandler(
+            (app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
+            app.config["DONT_REPLY_FROM_EMAIL"],
+            app.config["ADMINS"],
+            "[Error][{}] La aplicación falló".format(app.config["APP_ENV"]),
+            (app.config["MAIL_USERNAME"], app.config["MAIL_PASSWORD"]),
+            (),
+        )
+        mail_handler.setLevel(logging.ERROR)
+        mail_handler.setFormatter(mail_handler_formatter())
+        handlers.append(mail_handler)
+
+    # Asociamos cada uno de los handlers a cada uno de los loggers
+    for l in loggers:
+        for handler in handlers:
+            l.addHandler(handler)
+        l.propagate = False
+        l.setLevel(logging.DEBUG)
 
 
 def register_blueprints(app):
@@ -40,6 +115,8 @@ def create_app(settings_module="config.DevelopmentConfig"):
         app.config.from_pyfile("config-testing.py", silent=True)
     else:
         app.config.from_pyfile("config.py", silent=True)
+
+    configure_logging(app)
 
     login_manager.init_app(app)
     login_manager.login_view = "users.login"

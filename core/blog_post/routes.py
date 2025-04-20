@@ -1,12 +1,16 @@
 """Define the routes for the blog post module."""
 
-from flask import abort, redirect, render_template, url_for
+import logging
+
+from flask import abort, current_app, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from core.blog_post.models import Post
 
 from . import blog_post_bp
 from .forms import BlogPostForm
+
+logger = logging.getLogger(__name__)
 
 
 @blog_post_bp.route("/")
@@ -16,6 +20,8 @@ def index():
     Returns:
         str: All the existing posts.
     """
+    current_app.logger.info("Mostrando los posts del blog")
+    logger.info("Mostrando los posts del blog")
     posts = Post.get_all()
     return render_template("index.html", posts=posts)
 
