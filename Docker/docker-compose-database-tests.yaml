@@ -3,14 +3,14 @@ version: '3.1'
 
 services:
   postgres-db:
-    container_name: flask_blog_postgres_container
+    container_name: test_postgres_container
     # uts: host
     image: postgres:bookworm
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: test_123
-      POSTGRES_DB: miniblog
+      POSTGRES_DB: miniblog_test
     ports:
-      - 5432:5432
+      - 5433:5433
 
