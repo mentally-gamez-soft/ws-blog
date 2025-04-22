@@ -33,8 +33,11 @@
         {% endfor %}
     </div>
     <div>
-        <label for="postImage">Imagen de cabecera:</label>
-        <input type="file" id="postImage" name="post_image" accept="image/png, image/jpeg">
+        {{ form.post_image.label }}
+        {{ form.post_image }}<br>
+        {% for error in form.post_image.errors %}
+        <span style="color: red;">{{ error }}</span>
+        {% endfor %}
     </div>
     <div>{{ form.submit() }}</div>
 </form>
