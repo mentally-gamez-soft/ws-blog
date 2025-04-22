@@ -3,7 +3,7 @@
 from .default import *
 
 SQLALCHEMY_DATABASE_URI = (
-    "postgresql://postgres:test_123@localhost:5432/miniblog_test"
+    "postgresql://postgres:test_123@localhost:5433/miniblog_test"
 )
 DEBUG = True
 TESTING = True

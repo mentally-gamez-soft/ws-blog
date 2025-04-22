@@ -75,7 +75,7 @@ def post_form():
         post = Post(user_id=current_user.id, title=title, content=content)
         post.save()
         logger.info(f"Guardando nuevo post {title}")
-        return redirect(url_for("admin.list_posts"))
+        return redirect(url_for("blog_post.list_posts"))
     return render_template("admin/post_form.html", form=form)
 
 
@@ -104,7 +104,7 @@ def update_post_form(post_id):
         post.content = form.content.data
         post.save()
         logger.info(f"Guardando el post {post_id}")
-        return redirect(url_for("admin.list_posts"))
+        return redirect(url_for("blog_post.list_posts"))
     return render_template("admin/post_form.html", form=form, post=post)
 
 
@@ -142,7 +142,7 @@ def delete_post(post_id):
         abort(404)
     post.delete()
     logger.info(f"El post {post_id} ha sido eliminado")
-    return redirect(url_for("admin.list_posts"))
+    return redirect(url_for("blog_post.list_posts"))
 
 
 @blog_post_bp.route("/admin/user/<int:user_id>/", methods=["GET", "POST"])

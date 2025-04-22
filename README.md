@@ -18,7 +18,7 @@
 ## Postgres database connection string
     postgresql://<nombre_usuario>:<password>@<host>:<puerto>/<nombre_basededatos>
 
-## Define the environmenet variables of the system:
+## Define the environnment variables of the system:
     $env:APP_SETTINGS_MODULE = 'config.local'
 
 ## commands database migrations with flask-migrate:
