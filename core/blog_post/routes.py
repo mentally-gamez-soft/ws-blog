@@ -2,7 +2,14 @@
 
 import logging
 
-from flask import abort, current_app, redirect, render_template, url_for
+from flask import (
+    abort,
+    current_app,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_required
 
 from core.blog_post.models import Comment, Post
@@ -21,12 +28,14 @@ def index():
     """Declare the index route.
 
     Returns:
-        str: All the existing posts.
+        str: the paginated list of blog posts.
     """
     current_app.logger.info("Mostrando los posts del blog")
     logger.info("Mostrando los posts del blog")
-    posts = Post.get_all()
-    return render_template("index.html", posts=posts)
+    page = int(request.args.get("page", 1))
+    per_page = current_app.config["ITEMS_PER_PAGE"]
+    post_pagination = Post.all_paginated(page, per_page)
+    return render_template("index.html", post_pagination=post_pagination)
 
 
 @blog_post_bp.route("/post/<string:slug>/")
