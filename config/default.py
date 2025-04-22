@@ -25,3 +25,4 @@ DONT_REPLY_FROM_EMAIL = "direccion from"  # nosec
 ADMINS = ("admin.app@myflaskapp.com",)
 MAIL_USE_TLS = True
 MAIL_DEBUG = False
+ITEMS_PER_PAGE = 12

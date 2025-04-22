@@ -3,7 +3,6 @@
 import datetime
 from typing import List
 
-from flask import url_for
 from slugify import slugify
 from sqlalchemy.exc import IntegrityError
 
@@ -103,6 +102,21 @@ class Post(db.Model):
             Post: a post instance or None if not found.
         """
         return Post.query.get(id)
+
+    @staticmethod
+    def all_paginated(page=1, per_page=20):
+        """Define the paginaion on the whole list of blog posts.
+
+        Args:
+            page (int, optional): The page to get. Defaults to 1.
+            per_page (int, optional): The number of posts per page. Defaults to 20.
+
+        Returns:
+            Pagination: the pagination object with a result set of posts.
+        """
+        return Post.query.order_by(Post.created.asc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
 
 
 class Comment(db.Model):
