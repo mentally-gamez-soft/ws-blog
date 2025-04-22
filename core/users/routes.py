@@ -2,10 +2,11 @@
 
 from urllib.parse import urlparse
 
-from flask import redirect, render_template, request, url_for
+from flask import current_app, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from core import login_manager
+from core.common.mail import send_email
 from core.users.decorators import admin_required
 
 from . import users_bp
@@ -65,6 +66,16 @@ def show_signup_form():
             user = User(name=name, email=email)
             user.set_password(password)
             user.save()
+            # Enviamos un email de bienvenida
+            send_email(
+                subject="Bienvenid@ al miniblog",
+                sender=current_app.config["DONT_REPLY_FROM_EMAIL"],
+                recipients=[
+                    email,
+                ],
+                text_body=f"Hola {name}, bienvenid@ al miniblog de Flask",
+                html_body=f"<p>Hola <strong>{name}</strong>, bienvenid@ al miniblog de Flask</p>",
+            )
             # Dejamos al usuario logueado
             login_user(user, remember=True)
 

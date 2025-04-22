@@ -5,12 +5,15 @@ from logging.handlers import SMTPHandler
 
 from flask import Flask, render_template
 from flask_login import LoginManager
+from flask_mail import Mail  # 1. Importamos la clase Mail
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 login_manager = LoginManager()
 db = SQLAlchemy()
 migrate = Migrate()  # Se crea un objeto de tipo Migrate
+
+mail = Mail()  # 2. Instanciamos un objeto de tipo Mail
 
 
 def verbose_formatter():
@@ -126,6 +129,7 @@ def create_app(settings_module="config.DevelopmentConfig"):
     login_manager.login_view = "users.login"
     db.init_app(app)
     migrate.init_app(app, db)  # Se inicializa el objeto migrate
+    mail.init_app(app)  # 3. Inicializamos el objeto mail
 
     register_blueprints(app)
 
