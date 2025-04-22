@@ -24,6 +24,7 @@
 ## commands database migrations with flask-migrate:
     flask --app application db init
     flask --app application db migrate -m "my message here"
+    flask --app application db migrate -m "añade imagen al modelo post"
     flask --app application db upgrade 
 
 
