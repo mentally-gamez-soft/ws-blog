@@ -115,9 +115,10 @@ def create_app(settings_module="config.DevelopmentConfig"):
     app.config.from_object(settings_module)
     # Load the configuration from the instance folder
     if app.config.get("TESTING", False):
-        app.config.from_pyfile("config-testing.py", silent=True)
+        # app.config.from_pyfile("config-testing.py", silent=True)
+        app.config.from_pyfile("config/testing.py", silent=True)
     else:
-        app.config.from_pyfile("config.py", silent=True)
+        app.config.from_pyfile("config/local.py", silent=True)
 
     configure_logging(app)
 

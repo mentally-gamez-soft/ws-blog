@@ -80,7 +80,7 @@ def show_signup_form():
 def login():
     """Define the form for a user to login."""
     if current_user.is_authenticated:
-        return redirect(url_for("index"))
+        return redirect(url_for("blog_post.index"))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.get_by_email(form.email.data)
@@ -88,7 +88,7 @@ def login():
             login_user(user, remember=form.remember_me.data)
             next_page = request.args.get("next")
             if not next_page or urlparse(next_page).netloc != "":
-                next_page = url_for("index")
+                next_page = url_for("blog_post.index")
             return redirect(next_page)
     return render_template("users/login_form.html", form=form)
 

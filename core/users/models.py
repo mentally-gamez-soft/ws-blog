@@ -14,8 +14,18 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(256), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    password = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+
+    def __init__(self, name, email):
+        """Declare constructor for User.
+
+        Args:
+            name (str): the name of a user
+            email (str): the email of a user
+        """
+        self.name = name
+        self.email = email
 
     def set_password(self, password):
         """Set the assword for a user.
