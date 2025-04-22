@@ -9,6 +9,8 @@ from flask_mail import Mail  # 1. Importamos la clase Mail
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
+from core.common.filters import format_datetime
+
 login_manager = LoginManager()
 db = SQLAlchemy()
 migrate = Migrate()  # Se crea un objeto de tipo Migrate
@@ -131,12 +133,24 @@ def create_app(settings_module="config.DevelopmentConfig"):
     migrate.init_app(app, db)  # Se inicializa el objeto migrate
     mail.init_app(app)  # 3. Inicializamos el objeto mail
 
+    # Registro de los filtros
+    register_filters(app)
+
     register_blueprints(app)
 
     # Custom error handlers
     register_error_handlers(app)
 
     return app
+
+
+def register_filters(app):
+    """Define the filters for the jinja2 templates.
+
+    Args:
+        app (_type_): the flask application.
+    """
+    app.jinja_env.filters["datetime"] = format_datetime
 
 
 def register_error_handlers(app):
